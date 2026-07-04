@@ -87,11 +87,23 @@ class TestSharedArgs(TestCase):
         shared.repos = ('ksp2=ckan',)
         self.assertEqual(shared.game_ids, ['ksp2'])
 
+    def test_shared_games_ksa(self):
+        shared = SharedArgs()
+        shared.ckanmeta_remotes = ('ksa=ckan_url',)
+        shared.repos = ('ksa=ckan',)
+        self.assertEqual(shared.game_ids, ['ksa'])
+
     def test_shared_games_multi(self):
         shared = SharedArgs()
         shared.ckanmeta_remotes = ('ksp2=ckan_url', 'ksp=ckan_url')
         shared.repos = ('ksp2=ckan', 'ksp2=ckan')
         self.assertEqual(shared.game_ids, ['ksp', 'ksp2'])
+
+    def test_shared_games_multi_with_ksa(self):
+        shared = SharedArgs()
+        shared.ckanmeta_remotes = ('ksa=ckan_url', 'ksp2=ckan_url', 'ksp=ckan_url')
+        shared.repos = ('ksa=ckan', 'ksp2=ckan')
+        self.assertEqual(shared.game_ids, ['ksa', 'ksp', 'ksp2'])
 
 
 class TestGame(SharedArgsHarness):
@@ -129,3 +141,21 @@ class TestGame(SharedArgsHarness):
         path = f'{self.tmpdir.name}/upstream/netkan'
         self.assertEqual(
             Game('ksp2', self.shared_args).netkan_remote, path)
+
+    def test_shared_args_game_ksa(self):
+        self.assertEqual(self.shared_args.game('ksa').name, 'ksa')
+        self.assertIsInstance(self.shared_args.game('ksa'), Game)
+
+    def test_ckanmeta_remote_ksa(self):
+        path = f'{self.tmpdir.name}/upstream/ckan'
+        self.assertEqual(
+            Game('ksa', self.shared_args).ckanmeta_remote, path)
+
+    def test_netkan_remote_ksa(self):
+        path = f'{self.tmpdir.name}/upstream/netkan'
+        self.assertEqual(
+            Game('ksa', self.shared_args).netkan_remote, path)
+
+    def test_mod_root_ksa(self):
+        self.assertEqual(
+            Game('ksa', self.shared_args).mod_root, 'mods')

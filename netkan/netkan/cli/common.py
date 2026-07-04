@@ -75,6 +75,7 @@ class Game:
     MOD_ROOTS: Dict[str, str] = {
         'ksp':  'GameData',
         'ksp2': 'BepInEx/plugins',
+        'ksa':  'mods',
     }
 
     def __init__(self, name: str, shared: 'SharedArgs') -> None:

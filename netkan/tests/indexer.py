@@ -337,3 +337,8 @@ class TestIndexerQueueHandler(SharedArgsHarness):
         indexer = IndexerQueueHandler(self.shared_args)
         indexer.append_message('ksp2', self.mocked_message())
         self.assertTrue('ksp2' in indexer.game_handlers)
+
+    def test_ksa_message_append(self):
+        indexer = IndexerQueueHandler(self.shared_args)
+        indexer.append_message('ksa', self.mocked_message())
+        self.assertTrue('ksa' in indexer.game_handlers)

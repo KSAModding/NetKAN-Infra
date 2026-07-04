@@ -28,6 +28,10 @@ inbound_ksp2 = t.add_resource(Queue("InboundDevKsp2",
                                     QueueName="InboundDevKsp2.fifo",
                                     ReceiveMessageWaitTimeSeconds=20,
                                     FifoQueue=True))
+inbound_ksa = t.add_resource(Queue("InboundDevKsa",
+                                   QueueName="InboundDevKsa.fifo",
+                                   ReceiveMessageWaitTimeSeconds=20,
+                                   FifoQueue=True))
 outbound = t.add_resource(Queue("OutboundDev",
                                 QueueName="OutboundDev.fifo",
                                 ReceiveMessageWaitTimeSeconds=20,
@@ -62,6 +66,7 @@ t.add_resource(PolicyType(
                 "Resource": [
                     GetAtt(inbound_ksp, "Arn"),
                     GetAtt(inbound_ksp2, "Arn"),
+                    GetAtt(inbound_ksa, "Arn"),
                     GetAtt(outbound, "Arn"),
                     GetAtt(addqueue, "Arn"),
                     GetAtt(mirrorqueue, "Arn"),
@@ -76,7 +81,7 @@ t.add_resource(PolicyType(
     }
 ))
 
-for queue in [inbound_ksp, inbound_ksp2, outbound, addqueue, mirrorqueue]:
+for queue in [inbound_ksp, inbound_ksp2, inbound_ksa, outbound, addqueue, mirrorqueue]:
     t.add_output([
         Output(
             "{}QueueURL".format(queue.title),
