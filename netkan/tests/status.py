@@ -2,7 +2,7 @@
 # flake8: noqa
 
 from datetime import datetime
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from netkan.status import ModStatus
 
@@ -49,3 +49,12 @@ class TestModStatusRestore(TestCase):
         values = self.item_data()
         ModStatus.normalise_item('TheMod', values)
         self.assertEqual(values.get('ModIdentifier'), 'TheMod')
+
+
+class TestModStatusExport(TestCase):
+
+    @mock.patch.object(ModStatus, 'export_game_mods', return_value={})
+    def test_export_all_mods_games(self, mocked_export):
+        data = ModStatus.export_all_mods()
+        self.assertEqual(set(data.keys()),
+                         {'ksp', 'ksp2', 'ksa', 'no_game_id'})

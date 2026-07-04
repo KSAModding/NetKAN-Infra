@@ -83,7 +83,7 @@ class ModStatus(Model):
     @classmethod
     def export_all_mods(cls, compat: bool = True) -> Dict[str, Any]:
         data: Dict[str, Any] = {}
-        for game_id in ['ksp', 'ksp2']:
+        for game_id in ['ksp', 'ksp2', 'ksa']:
             data.update({game_id: cls.export_game_mods(
                 condition=ModStatus.game_id == game_id, compat=compat)})
         data.update({'no_game_id': cls.export_game_mods(

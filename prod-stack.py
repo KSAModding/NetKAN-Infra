@@ -22,15 +22,19 @@ ZONE_ID = os.environ.get('CKAN_ZONEID', False)
 BOT_FQDN = 'netkan.ksp-ckan.space'
 EMAIL = 'domains@ksp-ckan.space'
 PARAM_NAMESPACE = '/NetKAN/Indexer/'
-NETKAN_REMOTES = 'ksp=git@github.com:KSP-CKAN/NetKAN.git ksp2=git@github.com:KSP-CKAN/KSP2-NetKAN.git'
+NETKAN_REMOTES = ('ksp=git@github.com:KSP-CKAN/NetKAN.git'
+                  ' ksp2=git@github.com:KSP-CKAN/KSP2-NetKAN.git'
+                  ' ksa=git@github.com:KSAModding/KSA-NetKAN.git')
 NETKAN_USER = 'KSP-CKAN'
-NETKAN_REPOS = 'ksp=NetKAN ksp2=KSP2-NetKAN'
-CKANMETA_REMOTES = 'ksp=git@github.com:KSP-CKAN/CKAN-meta.git ksp2=git@github.com:KSP-CKAN/KSP2-CKAN-meta.git'
+NETKAN_REPOS = 'ksp=NetKAN ksp2=KSP2-NetKAN ksa=KSA-NetKAN'
+CKANMETA_REMOTES = ('ksp=git@github.com:KSP-CKAN/CKAN-meta.git'
+                    ' ksp2=git@github.com:KSP-CKAN/KSP2-CKAN-meta.git'
+                    ' ksa=git@github.com:KSAModding/KSA-CKAN-meta.git')
 CKANMETA_USER = 'KSP-CKAN'
-CKANMETA_REPOS = 'ksp=CKAN-meta ksp2=KSP2-CKAN-meta'
+CKANMETA_REPOS = 'ksp=CKAN-meta ksp2=KSP2-CKAN-meta ksa=KSA-CKAN-meta'
 NETKAN_USER = 'KSP-CKAN'
 STATUS_BUCKET = 'status.ksp-ckan.space'
-STATUS_KEYS = 'ksp=status/netkan.json ksp2=status/netkan-ksp2.json'
+STATUS_KEYS = 'ksp=status/netkan.json ksp2=status/netkan-ksp2.json ksa=status/netkan-ksa.json'
 
 if not ZONE_ID:
     print('Zone ID Required from EnvVar `CKAN_ZONEID`')
@@ -51,6 +55,10 @@ inbound2 = t.add_resource(Queue("NetKANKSP2Inbound",
                                 QueueName="InboundKsp2.fifo",
                                 ReceiveMessageWaitTimeSeconds=20,
                                 FifoQueue=True))
+inbound_ksa = t.add_resource(Queue("NetKANKSAInbound",
+                                   QueueName="InboundKsa.fifo",
+                                   ReceiveMessageWaitTimeSeconds=20,
+                                   FifoQueue=True))
 outbound = t.add_resource(Queue("NetKANOutbound",
                                 QueueName="Outbound.fifo",
                                 ReceiveMessageWaitTimeSeconds=20,
@@ -65,7 +73,7 @@ mirrorqueue = t.add_resource(Queue("Mirroring",
                                    FifoQueue=True))
 
 
-for queue in [inbound, inbound2, outbound, addqueue, mirrorqueue]:
+for queue in [inbound, inbound2, inbound_ksa, outbound, addqueue, mirrorqueue]:
     t.add_output([
         Output(
             "{}QueueURL".format(queue.title),
@@ -79,8 +87,9 @@ for queue in [inbound, inbound2, outbound, addqueue, mirrorqueue]:
         ),
     ])
 
-INFLATION_QUEUES = Sub('ksp=${ksp} ksp2=${ksp2}', ksp=GetAtt(
-    inbound, 'QueueName'), ksp2=GetAtt(inbound2, 'QueueName'))
+INFLATION_QUEUES = Sub('ksp=${ksp} ksp2=${ksp2} ksa=${ksa}', ksp=GetAtt(
+    inbound, 'QueueName'), ksp2=GetAtt(inbound2, 'QueueName'),
+    ksa=GetAtt(inbound_ksa, 'QueueName'))
 
 # DyanamoDB: MultiKAN Status
 multikan_db = t.add_resource(Table(
@@ -165,6 +174,7 @@ netkan_role = t.add_resource(Role(
                         "Resource": [
                             GetAtt(inbound, "Arn"),
                             GetAtt(inbound2, "Arn"),
+                            GetAtt(inbound_ksa, "Arn"),
                             GetAtt(outbound, "Arn"),
                             GetAtt(addqueue, "Arn"),
                             GetAtt(mirrorqueue, "Arn"),
@@ -353,7 +363,7 @@ netkan_ecs_role = t.add_resource(Role(
 # redeployment of services.
 ksp_builder_group = t.add_resource(Group("KspCkanBuilderGroup"))
 builder_services = []
-for service in ['Indexer', 'InflatorKsp', 'InflatorKsp2', 'Webhooks', 'Adder', 'Mirrorer']:
+for service in ['Indexer', 'InflatorKsp', 'InflatorKsp2', 'InflatorKsa', 'Webhooks', 'Adder', 'Mirrorer']:
     builder_services.append(
         Sub(
             'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/NetKANCluster/${service}',
@@ -444,6 +454,7 @@ t.add_resource(PolicyType(
                 "Resource": [
                     GetAtt(inbound, "Arn"),
                     GetAtt(inbound2, "Arn"),
+                    GetAtt(inbound_ksa, "Arn"),
                 ]
             },
             {
@@ -718,6 +729,26 @@ services = [
             ),
             ('AWS_REGION', Sub('${AWS::Region}')),
             ('GAME', 'KSP2')
+        ],
+        'volumes': [
+            ('ckan_cache', '/home/netkan/ckan_cache')
+        ]
+    },
+    {
+        'name': 'InflatorKsa',
+        'image': 'kspckan/inflator',
+        'memory': '256',
+        'secrets': ['GH_Token'],
+        'env': [
+            (
+                'QUEUES', Sub(
+                    '${Inbound},${Outbound}',
+                    Inbound=GetAtt(inbound_ksa, 'QueueName'),
+                    Outbound=GetAtt(outbound, 'QueueName')
+                )
+            ),
+            ('AWS_REGION', Sub('${AWS::Region}')),
+            ('GAME', 'KSA')
         ],
         'volumes': [
             ('ckan_cache', '/home/netkan/ckan_cache')

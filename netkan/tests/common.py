@@ -76,15 +76,18 @@ class SharedArgsHarness(TestCase, SharedArgsMixin):
         netkan_upstream = getattr(self, 'netkan_upstream')
         attributes = [
             ('ckanmeta_remotes',
-             (f'ksp={ckan_upstream}', f'ksp2={ckan_upstream}')),
+             (f'ksp={ckan_upstream}', f'ksp2={ckan_upstream}',
+              f'ksa={ckan_upstream}')),
             ('netkan_remotes',
-             (f'ksp={netkan_upstream}', f'ksp2={netkan_upstream}')),
+             (f'ksp={netkan_upstream}', f'ksp2={netkan_upstream}',
+              f'ksa={netkan_upstream}')),
             ('repos',
-             ('ksp=Test/KSP', 'ksp2=Test/KSP2')),
+             ('ksp=Test/KSP', 'ksp2=Test/KSP2', 'ksa=Test/KSA')),
             ('inflation_queues',
-             ('ksp=ksp.queue.url', 'ksp2=ksp2.queue.url')),
+             ('ksp=ksp.queue.url', 'ksp2=ksp2.queue.url',
+              'ksa=ksa.queue.url')),
             ('ia_collections',
-             ('ksp=kspcollection ksp2=ksp2collection'))
+             ('ksp=kspcollection', 'ksp2=ksp2collection', 'ksa=ksacollection'))
         ]
         for attr, val in attributes:
             setattr(self.shared_args, attr, val)

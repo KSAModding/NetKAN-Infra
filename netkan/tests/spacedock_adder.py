@@ -86,6 +86,11 @@ class TestSpaceDockAdderQueueHandler(SharedArgsHarness):
         adder.append_message('ksp2', self.mocked_message())
         self.assertTrue('ksp2' in adder.game_handlers)
 
+    def test_ksa_message_append(self):
+        adder = SpaceDockAdderQueueHandler(self.shared_args)
+        adder.append_message('ksa', self.mocked_message())
+        self.assertTrue('ksa' in adder.game_handlers)
+
 
 class TestSpaceDockAdder(SharedArgsHarness):
 
