@@ -24,12 +24,12 @@ EMAIL = 'domains@ksp-ckan.space'
 PARAM_NAMESPACE = '/NetKAN/Indexer/'
 NETKAN_REMOTES = ('ksp=git@github.com:KSP-CKAN/NetKAN.git'
                   ' ksp2=git@github.com:KSP-CKAN/KSP2-NetKAN.git'
-                  ' ksa=git@github.com:KSP-CKAN/KSA-NetKAN.git')
+                  ' ksa=git@github.com:KSAModding/KSA-NetKAN.git')
 NETKAN_USER = 'KSP-CKAN'
 NETKAN_REPOS = 'ksp=NetKAN ksp2=KSP2-NetKAN ksa=KSA-NetKAN'
 CKANMETA_REMOTES = ('ksp=git@github.com:KSP-CKAN/CKAN-meta.git'
                     ' ksp2=git@github.com:KSP-CKAN/KSP2-CKAN-meta.git'
-                    ' ksa=git@github.com:KSP-CKAN/KSA-CKAN-meta.git')
+                    ' ksa=git@github.com:KSAModding/KSA-CKAN-meta.git')
 CKANMETA_USER = 'KSP-CKAN'
 CKANMETA_REPOS = 'ksp=CKAN-meta ksp2=KSP2-CKAN-meta ksa=KSA-CKAN-meta'
 NETKAN_USER = 'KSP-CKAN'
